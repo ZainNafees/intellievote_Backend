@@ -19,7 +19,6 @@ mongoose.connect("mongodb://localhost:27017/intellievote_admin", {
 app.post('/intellievote_admin/register', async (req, res) => {
   const { firstName, lastName, email, password, confirmPassword } = req.body;
   
-  // Check if email already exists
   const existingUser = await AdminRegisterModel.findOne({ email });
   if (existingUser) {
     return res.status(400).json({ message: 'Email already registered' });
@@ -29,15 +28,15 @@ app.post('/intellievote_admin/register', async (req, res) => {
     return res.status(400).json({ message: 'Passwords do not match' });
   }
   
-  // Hash the password before saving
   const hashedPassword = await bcrypt.hash(password, 10);
   
   const newAdmin = new AdminRegisterModel({
     firstName,
     lastName,
     email,
-    password: hashedPassword,  // Store the hashed password
-    confirmPassword: hashedPassword  // Store the hashed confirmPassword as well
+    password: hashedPassword,
+    confirmPassword: hashedPassword,
+    role: 'admin' // Default role to admin
   });
   
   newAdmin.save()
@@ -46,7 +45,7 @@ app.post('/intellievote_admin/register', async (req, res) => {
 });
 
 // Login Route
-app.post('/login', (req, res) => {
+app.post('/intellievote_admin/login', (req, res) => {
   const { email, password } = req.body;
 
   AdminRegisterModel.findOne({ email })
@@ -55,17 +54,13 @@ app.post('/login', (req, res) => {
         return res.status(400).json("User not found");
       }
 
-      // Compare the password with the hashed password in the database
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        res.json("Login success");
+        // Include the role in the response
+        return res.json({ message: "Login success", role: user.role });
       } else {
-        res.status(400).json("Incorrect password");
+        return res.status(400).json("Incorrect password");
       }
     })
     .catch(err => res.status(400).json('Error: ' + err));
-});
-
-app.listen(3001, () => {
-  console.log("Server is Running on port 3001");
 });

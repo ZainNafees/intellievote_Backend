@@ -5,7 +5,8 @@ const adminRegisterSchema = new mongoose.Schema({
     lastName: String,
     email: String,
     password: String,
-    confirmPassword: String
+    confirmPassword: String,
+    role: { type: String, default: 'admin' } // Adding the role field
 });
 
 const AdminRegisterModel = mongoose.model('intellievote_admin', adminRegisterSchema);
