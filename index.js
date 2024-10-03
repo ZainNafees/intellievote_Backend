@@ -18,18 +18,18 @@ mongoose.connect("mongodb://localhost:27017/intellievote_admin", {
 // Admin Registration Route
 app.post('/intellievote_admin/register', async (req, res) => {
   const { firstName, lastName, email, password, confirmPassword } = req.body;
-  
-  const existingUser = await AdminRegisterModel.findOne({ email });
-  if (existingUser) {
-    return res.status(400).json({ message: 'Email already registered' });
-  }
-  
+
   if (password !== confirmPassword) {
     return res.status(400).json({ message: 'Passwords do not match' });
   }
-  
+
+  const existingUser  = await AdminRegisterModel.findOne({ email });
+  if (existingUser ) {
+    return res.status(400).json({ message: 'Email already registered' });
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
-  
+
   const newAdmin = new AdminRegisterModel({
     firstName,
     lastName,
@@ -38,7 +38,7 @@ app.post('/intellievote_admin/register', async (req, res) => {
     confirmPassword: hashedPassword,
     role: 'admin' // Default role to admin
   });
-  
+
   newAdmin.save()
     .then(admin => res.json(admin))
     .catch(err => res.status(400).json('Error: ' + err));
@@ -51,7 +51,7 @@ app.post('/intellievote_admin/login', (req, res) => {
   AdminRegisterModel.findOne({ email })
     .then(async (user) => {
       if (!user) {
-        return res.status(400).json("User not found");
+        return res.status(400).json("User  not found");
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -63,4 +63,8 @@ app.post('/intellievote_admin/login', (req, res) => {
       }
     })
     .catch(err => res.status(400).json('Error: ' + err));
+});
+
+app.listen(3001, () => {
+  console.log('Server started on port 3001');
 });
